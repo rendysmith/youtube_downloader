@@ -1,17 +1,10 @@
-# from pytube import YouTube
-# import subprocess, os, re
-# from moviepy.editor import VideoFileClip
-# from pydub import AudioSegment
-# import youtube_dl
 import requests
-# from bs4 import BeautifulSoup
-# import urllib.request
 import time
 
 #https://rapidapi.com/search/youtube%20to%20mp3
 
 def save_file(link, title):
-    print(f'Save file {title}')
+    print(f'Save file {title}\n{link}')
     response = requests.get(link)
     title = title.encode('utf-16', 'surrogatepass').decode('utf-16')
     for i in ['/', '\\', '|']:
@@ -21,7 +14,7 @@ def save_file(link, title):
     with open(filename, "wb") as f:
         f.write(response.content)
 
-    print('OK!')
+    print('Save OK!')
 
 def t_one_youtube_converter(link):
     #https://rapidapi.com/420vijay47/api/youtube-mp3-downloader2
@@ -95,8 +88,186 @@ def youtube_mp36(link):
 
     return 'error'
 
+def youtube_mp3_downloader2(link):
+    """
+    1 000 / Month
+    1 requests per second
+    """
+
+    n = 0
+    while n < 10:
+        url = "https://youtube-mp3-downloader2.p.rapidapi.com/ytmp3/ytmp3/"
+
+        querystring = {"url": link}
+
+        headers = {
+            "x-rapidapi-key": "8419074986mshfb2da144f8b1085p17a241jsn5d5602969ac8",
+            "x-rapidapi-host": "youtube-mp3-downloader2.p.rapidapi.com"
+        }
+
+        response = requests.get(url, headers=headers, params=querystring)
+        r_json = response.json()
+
+        if r_json.get('dlink'):
+            dlink = r_json['dlink']
+            videoid = r_json['videoid']
+
+            save_file(dlink, videoid)
+            return 'ok'
+
+        time.sleep(5)
+        n += 1
+
+    return 'error'
+
+def cloud_api_hub_youtube_downloader(link):
+    """
+    15 / Day
+    150 / Month
+    1000 requests per hour
+    """
+
+    id_ = link.split("?v=")[-1]
+
+    n = 0
+    while n < 10:
+        url = "https://cloud-api-hub-youtube-downloader.p.rapidapi.com/download"
+
+        querystring = {"id": id_, "filter": "audio", "quality": "highestaudio"}
+
+        headers = {
+            "x-rapidapi-key": "8419074986mshfb2da144f8b1085p17a241jsn5d5602969ac8",
+            "x-rapidapi-host": "cloud-api-hub-youtube-downloader.p.rapidapi.com"
+        }
+
+        response = requests.get(url, headers=headers, params=querystring)
+        r_json = response.json()
+
+        if r_json.get('url'):
+            dlink = r_json['url']
+            videoid = r_json['videoid']
+
+            save_file(dlink, videoid)
+            return 'ok'
+
+        input(response.json())
+
+
+
+
+
+        time.sleep(5)
+        n += 1
+
+    return 'error'
+
+def y2_audio_down(link):
+    """
+    220 / Day
+    1000 requests per hour
+    """
+
+    id_ = link.split("?v=")[-1]
+    print(id_)
+
+    n = 0
+    while n < 10:
+        url = "https://y2-audio-down.p.rapidapi.com/all_audio_data"
+
+        querystring = {"id": id_}
+
+        headers = {
+            "x-rapidapi-key": "8419074986mshfb2da144f8b1085p17a241jsn5d5602969ac8",
+            "x-rapidapi-host": "y2-audio-down.p.rapidapi.com"
+        }
+
+        response = requests.get(url, headers=headers, params=querystring)
+        print(response)
+        r_json = response.text
+        r_json = response.json()
+        print(r_json)
+
+        if r_json.get('audio_url'):
+            dlink = r_json['audio_url']
+            title = r_json['title']
+
+            save_file(dlink, title)
+            return 'ok'
+
+
+        time.sleep(5)
+        n += 1
+
+    return 'error'
+
+def youtube_mp310(link):
+    """
+    220 / Day
+    1000 requests per hour
+    """
+
+    id_ = link.split("?v=")[-1]
+    print(id_)
+
+    n = 0
+    while n < 10:
+        url = "https://youtube-mp310.p.rapidapi.com/download/mp3"
+
+        querystring = {"url": "https://www.youtube.com/watch?v=phd1U2JIfUA"}
+
+        headers = {
+            "x-rapidapi-key": "8419074986mshfb2da144f8b1085p17a241jsn5d5602969ac8",
+            "x-rapidapi-host": "youtube-mp310.p.rapidapi.com"
+        }
+
+        response = requests.get(url, headers=headers, params=querystring)
+        r_json = response.json()
+
+        if r_json.get('downloadUrl'):
+            dlink = r_json['downloadUrl']
+            title = r_json['title']
+
+            save_file(dlink, title)
+            return 'ok'
+
+
+        time.sleep(5)
+        n += 1
+
+    return 'error'
+
+def yt_search_and_download_mp3(link):
+    """
+    50 / Month
+    1000 requests per hour
+    """
+
+    n = 0
+    while n < 10:
+        url = "https://yt-search-and-download-mp3.p.rapidapi.com/mp3"
+
+        headers = {
+            "x-rapidapi-key": "8419074986mshfb2da144f8b1085p17a241jsn5d5602969ac8",
+            "x-rapidapi-host": "yt-search-and-download-mp3.p.rapidapi.com"
+        }
+
+        response = requests.get(url, headers=headers)
+        r_json = response.json()
+
+        if r_json.get('download'):
+            dlink = r_json['download']
+            title = r_json['title']
+
+            save_file(dlink, title)
+            return 'ok'
+
+
+        time.sleep(5)
+        n += 1
+
+    return 'error'
+
 if __name__ == '__main__':
     link = input('Вставьте ссылку на Youtube: ')
-    st = youtube_mp36(link)
-    if st != 'ok':
-        st = t_one_youtube_converter(link)
+    st = y2_audio_down(link)
+
