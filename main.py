@@ -1,16 +1,23 @@
+import asyncio
+import os.path
+
 import requests
 import time
 
+from sqlalchemy.util import await_only
+
 #https://rapidapi.com/search/youtube%20to%20mp3
 
-def save_file(link, title):
+download_path = '/home/andy/Музыка'
+
+def save_file(link, title, format='mp3'):
     print(f'Save file {title}\n{link}')
     response = requests.get(link)
     title = title.encode('utf-16', 'surrogatepass').decode('utf-16')
     for i in ['/', '\\', '|']:
         title = title.replace(i, '')
 
-    filename = f'{title}.mp3'
+    filename = os.path.join(download_path, f'{title}.{format}')
     with open(filename, "wb") as f:
         f.write(response.content)
 
@@ -88,17 +95,20 @@ def youtube_mp36(link):
 
     return 'error'
 
-def youtube_mp3_downloader2(link):
+class YMD2:
     """
     1 000 / Month
     1 requests per second
     """
 
-    n = 0
-    while n < 10:
-        url = "https://youtube-mp3-downloader2.p.rapidapi.com/ytmp3/ytmp3/"
+    def __init__(self, ylink):
+        self.ylink = ylink
+        self.id_ = ylink.split("?v=")[-1]
 
-        querystring = {"url": link}
+    async def get_link(self):
+        url = "https://youtube-mp3-downloader2.p.rapidapi.com/ytmp3/ytmp3/long_video.php"
+
+        querystring = {"url": self.ylink}
 
         headers = {
             "x-rapidapi-key": "8419074986mshfb2da144f8b1085p17a241jsn5d5602969ac8",
@@ -109,31 +119,84 @@ def youtube_mp3_downloader2(link):
         r_json = response.json()
 
         if r_json.get('dlink'):
-            dlink = r_json['dlink']
-            videoid = r_json['videoid']
+            url = r_json['dlink']
+            print(url)
+            print('Url OK!')
+            return url
 
-            save_file(dlink, videoid)
+        else:
+            print(r_json)
+
+        return None
+
+    async def dowloader(self, save_file):
+        n = 0
+        while n < 10:
+            dlink = await self.get_link()
+            print('--->>>', dlink)
+
+            if dlink:
+                break
+
+            await asyncio.sleep(5)
+            n += 1
+
+        n = 0
+        while n < 10:
+            title_data = CAHYD(self.ylink)
+            title = await title_data.get_title()
+            print('--->>>', title)
+
+            if title:
+                break
+
+            await asyncio.sleep(5)
+            n += 1
+
+        if dlink and title:
+            save_file(dlink, title, format='mpga')
             return 'ok'
 
-        time.sleep(5)
-        n += 1
+        return 'error'
 
-    return 'error'
 
-def cloud_api_hub_youtube_downloader(link):
+class CAHYD:
     """
     15 / Day
     150 / Month
     1000 requests per hour
     """
 
-    id_ = link.split("?v=")[-1]
+    def __init__(self, ylink):
+        self.ylink = ylink
+        self.id_ = ylink.split("?v=")[-1]
 
-    n = 0
-    while n < 10:
-        url = "https://cloud-api-hub-youtube-downloader.p.rapidapi.com/download"
+    async def get_title(self):
+        url = "https://cloud-api-hub-youtube-downloader.p.rapidapi.com/info/title"
 
-        querystring = {"id": id_, "filter": "audio", "quality": "highestaudio"}
+        querystring = {"id": self.id_}
+
+        headers = {
+            "x-rapidapi-key": "8419074986mshfb2da144f8b1085p17a241jsn5d5602969ac8",
+            "x-rapidapi-host": "cloud-api-hub-youtube-downloader.p.rapidapi.com"
+        }
+
+        response = requests.get(url, headers=headers, params=querystring)
+        r_json = response.json()
+
+        if r_json.get('title'):
+            title = r_json['title']
+            print(title)
+            print('Title OK!')
+            return title
+
+        return None
+
+    async def get_link(self):
+        url = "https://cloud-api-hub-youtube-downloader.p.rapidapi.com/mux"
+
+        querystring = {"id": self.id_, "quality": "144", "audioFormat": "mp3", "language": "en",
+                       "audioOnly": "true"}
 
         headers = {
             "x-rapidapi-key": "8419074986mshfb2da144f8b1085p17a241jsn5d5602969ac8",
@@ -144,22 +207,27 @@ def cloud_api_hub_youtube_downloader(link):
         r_json = response.json()
 
         if r_json.get('url'):
-            dlink = r_json['url']
-            videoid = r_json['videoid']
+            url = r_json['url']
+            print(url)
+            print('Url OK!')
+            return url
 
-            save_file(dlink, videoid)
-            return 'ok'
+        return None
 
-        input(response.json())
+    async def dowloader(self, save_file):
+        n = 0
+        while n < 10:
+            dlink = await self.get_link()
+            title = await self.get_title()
 
+            if dlink and title:
+                save_file(dlink, title)
+                return 'ok'
 
+            await asyncio.sleep(5)
+            n += 1
 
-
-
-        time.sleep(5)
-        n += 1
-
-    return 'error'
+        return 'error'
 
 def y2_audio_down(link):
     """
@@ -246,12 +314,14 @@ def yt_search_and_download_mp3(link):
     while n < 10:
         url = "https://yt-search-and-download-mp3.p.rapidapi.com/mp3"
 
+        querystring = {"url": link}
+
         headers = {
             "x-rapidapi-key": "8419074986mshfb2da144f8b1085p17a241jsn5d5602969ac8",
             "x-rapidapi-host": "yt-search-and-download-mp3.p.rapidapi.com"
         }
 
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers, params=querystring)
         r_json = response.json()
 
         if r_json.get('download'):
@@ -261,13 +331,24 @@ def yt_search_and_download_mp3(link):
             save_file(dlink, title)
             return 'ok'
 
-
         time.sleep(5)
         n += 1
 
     return 'error'
 
+async def main(link):
+    data = YMD2(link)
+    result = await data.dowloader(save_file)
+    #title = await data.get_title()
+    #print(title)
+
+    #if title:
+
+
+
+
 if __name__ == '__main__':
     link = input('Вставьте ссылку на Youtube: ')
-    st = y2_audio_down(link)
+    asyncio.run(main(link))
+
 
