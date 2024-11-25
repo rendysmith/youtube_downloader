@@ -69,9 +69,9 @@ def t_one_youtube_converter(link):
 def youtube_mp36(link):
     url = "https://youtube-mp36.p.rapidapi.com/dl"
 
-    id = link.split('https://www.youtube.com/watch?v=')[1]
+    id_ = link.split('?v=')[1]
 
-    querystring = {"id": id}
+    querystring = {"id": id_}
 
     headers = {
         "X-RapidAPI-Key": "8419074986mshfb2da144f8b1085p17a241jsn5d5602969ac8",
@@ -329,12 +329,24 @@ def yt_search_and_download_mp3(link):
             title = r_json['title']
 
             save_file(dlink, title)
-            return 'ok'
+            return True
 
         time.sleep(5)
         n += 1
 
-    return 'error'
+    return False
+
+async def py_youtube(link):
+    from pytubefix import YouTube
+    from pytubefix.cli import on_progress
+
+    yt = YouTube(link, on_progress_callback=on_progress)
+    print(yt.title)
+
+    ys = yt.streams.get_audio_only()
+    ys.download(output_path=download_path)
+
+
 
 async def main(link):
     data = YMD2(link)
@@ -349,6 +361,6 @@ async def main(link):
 
 if __name__ == '__main__':
     link = input('Вставьте ссылку на Youtube: ')
-    asyncio.run(main(link))
+    asyncio.run(py_youtube(link))
 
 
