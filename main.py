@@ -4,11 +4,11 @@ import os.path
 import requests
 import time
 
-from sqlalchemy.util import await_only
+#from sqlalchemy.util import await_only
 
 #https://rapidapi.com/search/youtube%20to%20mp3
 
-download_path = '/home/andy/Музыка'
+download_path = '/home/andrewsmith/Music'
 
 def save_file(link, title, format='mp3'):
     print(f'Save file {title}\n{link}')
@@ -340,11 +340,57 @@ async def py_youtube(link):
     from pytubefix import YouTube
     from pytubefix.cli import on_progress
 
-    yt = YouTube(link, on_progress_callback=on_progress)
+    yt = YouTube(link, on_progress_callback=on_progress, use_oauth=True)
     print(yt.title)
 
     ys = yt.streams.get_audio_only()
     ys.download(output_path=download_path)
+
+async def py_yt_dlp(url, audio_format="mp3", output_name=str(int(time.time()))):
+    import yt_dlp
+    import shutil
+
+    # Проверка наличия FFmpeg
+    if shutil.which("ffmpeg") is None:
+        print("❌ Ошибка: FFmpeg не найден! Установите FFmpeg для извлечения аудио.")
+        return
+
+    output_template = os.path.join(download_path, f"{output_name or '%(title)s'}.%(ext)s")
+    print(output_template)
+
+    # Опции для yt_dlp
+    ydl_opts = {
+        'format': 'bestaudio/best',  # Выбираем лучшее качество аудио
+        'extractaudio': True,  # Извлекаем только аудио
+        'audioformat': audio_format,  # Указываем формат
+        'outtmpl': output_template,  # Шаблон имени файла
+        'postprocessors': [{
+            'key': 'FFmpegExtractAudio',  # Используем FFmpeg для конвертации
+            'preferredcodec': audio_format,
+        }],
+        'quiet': True,  # Подавляем лишний вывод
+        'noprogress': False,  # Отключаем прогресс-бар
+        'yes_playlist': False,  # Поддержка плейлистов
+    }
+
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info_dict = ydl.extract_info(url, download=True)
+        #print(info_dict)
+
+        file_name = info_dict.get('title', None)
+        if not file_name:
+            file_name = info_dict.get('fulltitle', "Unknown Video")  #fulltitle
+        print(file_name)
+        print(f"✅ Скачивание завершено! Сохранено как '{file_name}.{audio_format}'")
+
+    old_name = os.path.join(download_path, f"{output_name}.{audio_format}")
+    new_name = os.path.join(download_path, f"{file_name}.{audio_format}")
+    os.rename(old_name, new_name)
+    print('OK!')
+
+
+
+
 
 
 
@@ -360,7 +406,8 @@ async def main(link):
 
 
 if __name__ == '__main__':
-    link = input('Вставьте ссылку на Youtube: ')
-    asyncio.run(py_youtube(link))
+    #link = input('Вставьте ссылку на Youtube: ')
+    link = 'https://www.youtube.com/watch?v=8TqbRnxiWRU'
+    asyncio.run(py_yt_dlp(link))
 
 
