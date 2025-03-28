@@ -406,8 +406,8 @@ async def main(link):
 
 
 if __name__ == '__main__':
-    #link = input('Вставьте ссылку на Youtube: ')
-    link = 'https://www.youtube.com/watch?v=8TqbRnxiWRU'
+    link = input('Вставьте ссылку на Youtube: ')
+    #link = 'https://www.youtube.com/watch?v=8TqbRnxiWRU'
     asyncio.run(py_yt_dlp(link))
 
 
