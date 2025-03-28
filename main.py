@@ -4,11 +4,21 @@ import os.path
 import requests
 import time
 
+import os
+
+# Получаем имя текущего пользователя
+username = os.getlogin()
+print(f"Текущий пользователь: {username}")
+
+# # Получаем имя пользователя из переменной окружения
+# username = os.environ.get("USERNAME") or os.environ.get("USER")
+# print(f"Текущий пользователь: {username}")
 #from sqlalchemy.util import await_only
 
 #https://rapidapi.com/search/youtube%20to%20mp3
 
-download_path = '/home/andrewsmith/Music'
+download_path = os.path.join('home', username, 'Music')
+os.makedirs(download_path, exist_ok=True)
 
 def save_file(link, title, format='mp3'):
     print(f'Save file {title}\n{link}')
@@ -158,7 +168,6 @@ class YMD2:
             return 'ok'
 
         return 'error'
-
 
 class CAHYD:
     """
