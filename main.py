@@ -17,7 +17,8 @@ print(f"Текущий пользователь: {username}")
 
 #https://rapidapi.com/search/youtube%20to%20mp3
 
-download_path = os.path.join('home', username, 'Music')
+download_path = os.path.join('/home', username, 'Music')
+print(download_path)
 os.makedirs(download_path, exist_ok=True)
 
 def save_file(link, title, format='mp3'):
@@ -389,19 +390,15 @@ async def py_yt_dlp(url, audio_format="mp3", output_name=str(int(time.time()))):
         file_name = info_dict.get('title', None)
         if not file_name:
             file_name = info_dict.get('fulltitle', "Unknown Video")  #fulltitle
+
         print(file_name)
         print(f"✅ Скачивание завершено! Сохранено как '{file_name}.{audio_format}'")
 
     old_name = os.path.join(download_path, f"{output_name}.{audio_format}")
     new_name = os.path.join(download_path, f"{file_name}.{audio_format}")
+    print(new_name)
     os.rename(old_name, new_name)
     print('OK!')
-
-
-
-
-
-
 
 async def main(link):
     data = YMD2(link)
@@ -410,9 +407,6 @@ async def main(link):
     #print(title)
 
     #if title:
-
-
-
 
 if __name__ == '__main__':
     link = input('Вставьте ссылку на Youtube: ')
